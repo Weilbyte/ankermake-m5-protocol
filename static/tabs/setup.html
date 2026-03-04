@@ -123,38 +123,6 @@
                 </form>
                 {% endif %}
 
-                <form
-                    action="{{ url_for('app_api_ankerctl_config_upload') }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="mb-3"
-                    id="config-upload-form"
-                >
-                    <div class="card">
-                        <div class="card-header fs-4">
-                            Upload AnkerMake Login File
-                        </div>
-
-                        <div class="card-body input-group">
-                            <input
-                                class="form-control"
-                                type="file"
-                                id="loginFile"
-                                name="login_file"
-                                required
-                                aria-required="true"
-                            />
-                            <button class="btn btn-secondary submit" type="submit" id="upload">
-                                {{ macro.bi_icon("cloud-arrow-up-fill", "Upload") }}
-                            </button>
-                        </div>
-
-                        <div class="card-footer mt-2">
-                            Location: <code id="loginFilePath" class="fw-lighter">{{ login_file_path }}</code>
-                            {{ macro.clipboard_button("#loginFilePath") }}
-                        </div>
-                    </div>
-                </form>
 
                 <div class="card">
                     <div class="card">

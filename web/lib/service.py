@@ -360,6 +360,13 @@ class ServiceManager:
 
                 with svc.tap(lambda data: queue.put(data)):
                     while svc.state == RunState.Running:
-                        yield queue.get(timeout=timeout)
-        except (EOFError, OSError, ServiceStoppedError, Empty):
+                        try:
+                            yield queue.get(timeout=timeout)
+                        except Empty:
+                            yield None, None
+        except (EOFError, OSError, ServiceStoppedError) as e:
+            log.exception(f"ServiceManager stream {name} handled error: {e}")
             return
+        except Exception as e:
+            log.exception(f"ServiceManager stream {name} fatal error: {e}")
+            raise

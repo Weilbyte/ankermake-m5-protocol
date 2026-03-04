@@ -107,27 +107,37 @@ def load_config_from_api(auth_token, region, insecure):
 
     log.info("Requesting pppp keys..")
     sns = [pr["station_sn"] for pr in printers]
-    dsks = {dsk["station_sn"]: dsk for dsk in appapi.equipment_get_dsk_keys(station_sns=sns)["dsk_keys"]}
+    dsks = {}
+    if sns:
+        try:
+            dsk_data = appapi.equipment_get_dsk_keys(station_sns=sns)
+            dsks = {dsk["station_sn"]: dsk for dsk in dsk_data.get("dsk_keys", [])}
+        except Exception as e:
+            log.warning(f"Failed to fetch pppp keys: {e}")
 
     # populate config object with printer list
     # Sort the list of printers by printer.id
-    printers.sort(key=lambda p: p["station_id"])
+    printers.sort(key=lambda p: p.get("station_id", 0))
     for pr in printers:
-        station_sn = pr["station_sn"]
+        station_sn = pr.get("station_sn")
+        p2p_key = ""
+        if station_sn in dsks and "dsk_key" in dsks[station_sn]:
+            p2p_key = dsks[station_sn]["dsk_key"]
+
         config.printers.append(Printer(
-            id=pr["station_id"],
+            id=pr.get("station_id"),
             sn=station_sn,
-            name=pr["station_name"],
-            model=pr["station_model"],
-            create_time=datetime.fromtimestamp(pr["create_time"]),
-            update_time=datetime.fromtimestamp(pr["update_time"]),
-            mqtt_key=unhex(pr["secret_key"]),
-            wifi_mac=pr["wifi_mac"],
-            ip_addr=pr["ip_addr"],
-            api_hosts=pppp_decode_initstring(pr["app_conn"]),
-            p2p_hosts=pppp_decode_initstring(pr["p2p_conn"]),
-            p2p_duid=pr["p2p_did"],
-            p2p_key=dsks[pr["station_sn"]]["dsk_key"],
+            name=pr.get("station_name"),
+            model=pr.get("station_model"),
+            create_time=datetime.fromtimestamp(pr.get("create_time", 0)),
+            update_time=datetime.fromtimestamp(pr.get("update_time", 0)),
+            mqtt_key=unhex(pr.get("secret_key", "")),
+            wifi_mac=pr.get("wifi_mac"),
+            ip_addr=pr.get("ip_addr"),
+            api_hosts=pppp_decode_initstring(pr.get("app_conn", "")),
+            p2p_hosts=pppp_decode_initstring(pr.get("p2p_conn", "")),
+            p2p_duid=pr.get("p2p_did"),
+            p2p_key=p2p_key,
         ))
         log.info(f"Adding printer [{station_sn}]")
 
@@ -153,13 +163,18 @@ def import_config_from_server(config, login_data, insecure):
     # extract account region
     region = logincache.guess_region(login_data["ab_code"])
 
+    import traceback
     try:
         cfg = load_config_from_api(auth_token, region, insecure)
     except APIError as E:
-        log.critical(f"Config import failed: {E} "
+        log.error(f"Config import failed: {E} "
                      "(auth token might be expired: make sure Ankermake Slicer can connect, then try again)")
+        traceback.print_exc()
+        return
     except Exception as E:
-        log.critical(f"Config import failed: {E}")
+        log.error(f"Config import failed: {E}")
+        traceback.print_exc()
+        return
 
     # prepare to rescue any printer IP addresses already configured
     printer_ips = get_printer_ips(config)
@@ -203,7 +218,7 @@ def update_printer_ip_addresses(config, printer_ips: list) -> list:
 
     with config.modify() as cfg:
         if not cfg or not cfg.printers:
-            log.error("No printers configured. Run 'config login' or 'config import' to populate.")
+            log.error("No printers configured. Run 'config login' to populate.")
             return None
 
         for p in cfg.printers:

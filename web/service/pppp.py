@@ -27,9 +27,10 @@ class PPPPService(Service):
         )
 
     def worker_start(self):
+        print("PPPP worker_start BEGIN")
         config = app.config["config"]
 
-        deadline = datetime.now() + timedelta(seconds=2)
+        deadline = datetime.now() + timedelta(seconds=15)
 
         with config.open() as cfg:
             if not cfg:
@@ -39,7 +40,18 @@ class PPPPService(Service):
         if not printer.ip_addr:
             raise ServiceStoppedError("Printer IP address not available")
 
-        api = AnkerPPPPAsyncApi.open_lan(Duid.from_string(printer.p2p_duid), host=printer.ip_addr)
+        try:
+            import platform
+            if platform.system() == "Windows":
+                api = AnkerPPPPAsyncApi.open_broadcast("0.0.0.0")
+                api.duid = Duid.from_string(printer.p2p_duid)
+            else:
+                api = AnkerPPPPAsyncApi.open_lan(Duid.from_string(printer.p2p_duid), host=printer.ip_addr)
+        except Exception as e:
+            print(f"CRASH IN WORKER START PLATFORM: {e}")
+            import traceback; traceback.print_exc()
+            raise
+        
         if app.config["pppp_dump"]:
             dumpfile = app.config["pppp_dump"]
             log.info(f"Logging all pppp traffic to {dumpfile!r}")
@@ -48,14 +60,26 @@ class PPPPService(Service):
 
         log.debug(f"Trying connect to printer {printer.name} ({printer.p2p_duid}) over pppp using ip {printer.ip_addr}")
 
-        api.connect_lan_search()
+        try:
+            print("PPPPService: Trying connect over pppp")
+            api.connect_lan_search()
 
-        while api.state != PPPPState.Connected:
-            try:
-                msg = api.recv(timeout=(deadline - datetime.now()).total_seconds())
-                api.process(msg)
-            except StopIteration:
-                raise ConnectionRefusedError("Connection rejected by device")
+            while api.state != PPPPState.Connected:
+                if datetime.now() > deadline:
+                    print('PPPPService deadline exceeded')
+                    raise TimeoutError("Connection timeout")
+                try:
+                    msg = api.poll(timeout=0.1)
+                except TimeoutError:
+                    print('PPPPService poll timeout', api.state)
+                    pass
+                except StopIteration:
+                    print('PPPPService stop iteration')
+                    raise ConnectionRefusedError("Connection rejected by device")
+        except Exception as e:
+            print(f"CRASH IN WORKER START CONNECT: {e}")
+            import traceback; traceback.print_exc()
+            raise
 
         log.info(f"Successfully connected to printer {printer.name} ({printer.p2p_duid}) over pppp using ip {printer.ip_addr}")
         log.info("Established pppp connection")

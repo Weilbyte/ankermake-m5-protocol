@@ -353,45 +353,11 @@ def http_calc_sec_code(duid, mac):
 @main.group("config", help="View and update configuration")
 @click.pass_context
 def config(ctx):
-    if ctx.invoked_subcommand in {"import", "decode"}:
-        return
-
     env = ctx.obj
     env.upgrade_config_if_needed()
 
 
-@config.command("decode")
-@click.argument("fd", required=False, type=click.File("r"), metavar="path/to/login.json")
-@pass_env
-def config_decode(env, fd):
-    """
-    Decode a `login.json` file and print its contents.
-    """
 
-    if fd is None:
-        useros = platform.system()
-
-        darfileloc = path.expanduser('~/Library/Application Support/AnkerMake/AnkerMake_64bit_fp/login.json')
-        winfileloc1 = path.expandvars(r'%LOCALAPPDATA%\Ankermake\AnkerMake_64bit_fp\login.json')
-        winfileloc2 = path.expandvars(r'%LOCALAPPDATA%\Ankermake\login.json')
-
-        try:
-            if useros == 'Darwin':
-                fd = open(darfileloc, 'r')
-            elif useros == 'Windows':
-                if path.isfile(winfileloc1):
-                    fd = open(winfileloc1, 'r')
-                else:
-                    fd = open(winfileloc2, 'r')
-            else:
-                log.critical("This platform does not support autodetection. Please specify file location")
-        except FileNotFoundError:
-            log.critical("Failed to import file - check if you are logged into Ankerslicer")
-
-    log.info("Loading file..")
-
-    cache = libflagship.logincache.load(fd.read())["data"]
-    print(json.dumps(cache, indent=4))
 
 
 @config.command("login")
@@ -452,7 +418,11 @@ def config_login(env, country, email, password):
         # ask the user to resolve the captcha
         if captcha["id"]:
             log.warning(f"Login requires solving a captcha")
-            if webbrowser.open(captcha["img"], new=2):
+            import tempfile
+            with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html") as f:
+                f.write(f'<html><body><h2>Please solve this captcha and enter the result in your terminal:</h2><br><img src="{captcha["img"]}"></body></html>')
+                tmp_url = "file://" + f.name.replace("\\", "/")
+            if webbrowser.open(tmp_url, new=2):
                 captcha["answer"] = input("Please enter the captcha answer: ").strip()
             else:
                 log.critical(f"Cannot open webbrowser for displaying captcha, aborting.")
@@ -470,46 +440,7 @@ def config_login(env, country, email, password):
         log.info("Finished import")
 
 
-@config.command("import")
-@click.argument("fd", required=False, type=click.File("r"), metavar="path/to/login.json")
-@pass_env
-def config_import(env, fd):
-    """
-    Import printer and account information from login.json
 
-    When run without filename, attempt to auto-detect login.json in default
-    install location
-    """
-
-    if fd is None:
-        useros = platform.system()
-
-        darfileloc = path.expanduser('~/Library/Application Support/AnkerMake/AnkerMake_64bit_fp/login.json')
-        winfileloc1 = path.expandvars(r'%LOCALAPPDATA%\Ankermake\AnkerMake_64bit_fp\login.json')
-        winfileloc2 = path.expandvars(r'%LOCALAPPDATA%\Ankermake\login.json')
-
-        try:
-            if useros == 'Darwin':
-                fd = open(darfileloc, 'r')
-            elif useros == 'Windows':
-                if path.isfile(winfileloc1):
-                    fd = open(winfileloc1, 'r')
-                else:
-                    fd = open(winfileloc2, 'r')
-            else:
-                log.critical("This platform does not support autodetection. Please specify file location")
-        except FileNotFoundError:
-            log.critical("Failed to import file - check if you are logged into Ankerslicer")
-
-    log.info("Loading cache..")
-
-    # load the login configuration from the provided file
-    cache = libflagship.logincache.load(fd.read())["data"]
-
-    # import the remaining configuration from the server
-    cli.config.import_config_from_server(env.config, cache, env.insecure)
-
-    log.info("Finished import")
 
 
 @config.command("show")
@@ -523,7 +454,7 @@ def config_show(env):
     # read config from json file named `ankerctl/default.json`
     with env.config.open() as cfg:
         if not cfg:
-            log.error("No printers configured. Run 'config import' to populate.")
+            log.error("No printers configured. Run 'config login' to populate.")
             return
 
         log.info("Account:")

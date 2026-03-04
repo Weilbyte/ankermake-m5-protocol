@@ -2,8 +2,6 @@
 
 Welcome! This repository contains `ankerctl`, a command-line interface and web UI for monitoring, controlling and interfacing with AnkerMake M5 and M5C 3D printers.
 
-**NOTE:** This is our first major release and while we have tested thoroughly there may be bugs. If you encounter one please open a [Github Issue](https://github.com/Ankermgmt/ankermake-m5-protocol/issues/new/choose)
-
 The `ankerctl` program uses [`libflagship`](documentation/developer-docs/libflagship.md), a library for communicating with the numerous different protocols required for connecting to an AnkerMake M5 or M5C printer. The `libflagship` library is also maintained in this repo, under [`libflagship/`](libflagship/).
 
 ![Screenshot of ankerctl](/documentation/web-interface.png "Screenshot of ankerctl web interface")
@@ -39,7 +37,7 @@ There are currently two ways to do an install of ankerctl. You can install direc
 Order of Operations for Success:
 - Choose installation method: [Docker](documentation/install-from-docker.md) or [Git](documentation/install-from-git.md)
 - Follow the installation intructions for the install method
-- Import the login.json file
+- Login to your AnkerMake account
 - Have fun! Either run `ankerctl` from CLI or launch the webserver
 
 > **Note**
@@ -50,44 +48,19 @@ Order of Operations for Success:
 
 Follow the instructions for a [git install](documentation/install-from-git.md) (recommended), or [docker install](documentation/install-from-docker.md).
 
-## Importing configuration
+## Authenticating your Account
 
-1. Import your AnkerMake account data by opening a terminal window in the folder you placed ankerctl in and running the following command:
-
-   ```sh
-   python3 ankerctl.py config import
-   ```
-
-   When run without filename on Windows and MacOS, the default location of `login.json` will be tried if no filename is specified.
-
-   Otherwise, you can specify the file path for `login.json`. Example for Linux:
-   ```sh
-   ./ankerctl.py config import ~/.wine/drive_c/users/username/AppData/Local/AnkerMake/AnkerMake_64bit_fp/login.json
-   ```
-   MacOS
-   ```sh
-   ./ankerctl.py config import $HOME/Library/Application\ Support/AnkerMake/AnkerMake_64bit_fp/login.json
-   ```
-   Windows
-   ```sh
-   python3 ankerctl.py config import %APPDATA%\AnkerMake\AnkerMake_64bit_fp\login.json
-   ```
-
-   Type `ankerctl.py config import -h` for more details on the import options. Support for logging in with username and password is not yet supported. To learn more about the method used to extract the login information and add printers, see the [MQTT Overview](documentation/developer-docs/mqtt-overview.md) and [Example Files](documentation/developer-docs/example-file-usage) documentation.
-
-   The output when successfully importing a config is similar to this:
+1. Import your AnkerMake account data by opening a terminal window in the root `ankermake-m5-protocol` directory and logging in:
 
    ```sh
-   [*] Loading cache..
-   [*] Initializing API..
-   [*] Requesting profile data..
-   [*] Requesting printer list..
-   [*] Requesting pppp keys..
-   [*] Adding printer [AK7ABC0123401234]
-   [*] Finished import
+   python3 ankerctl.py config login
    ```
 
-   At this point, your config is saved to a configuration file managed by `ankerctl`. To see an overview of the stored data, use `config show`:
+   You will be asked to provide your AnkerMake **Email**, **Password**, and **Country Code**.
+
+   > **Note:** For more specific details on authentication options, bypassing Captchas, and verifying your connection, read the [Login Instructions page](documentation/login-instructions.md).
+
+   At this point, your config is saved locally. To see an overview of the stored data and verify your connected printers, use `config show`:
 
    ```sh
    ./ankerctl.py config show
@@ -107,7 +80,7 @@ Follow the instructions for a [git install](documentation/install-from-git.md) (
 2. Now that the printer information is known to `ankerctl`, the tool is ready to use. There’s a lot of available commands and utilities, use a command followed by `-h` to learn what your options are and get more in specific usage instructions.
 
 > **NOTE:**
-> As an alternative to using "config import" on the command line, it is possible to upload `login.json` through the web interface. Either method will work fine.
+> You must keep the terminal webserver running anytime you wish to use the web interface or print via a slicer.
 
 ## Usage
 
@@ -130,8 +103,7 @@ Follow the instructions for a [git install](documentation/install-from-git.md) (
 2. Navigate to [http://localhost:4470](http://localhost:4470) in your browser of choice on the same computer the webserver is running on. 
  
  > **Important**
- > If your `login.json` file was not automatically found, you’ll be prompted to upload your `login.json` file and the given the default path it should be found in your corresponding Operating System. 
-   Once the `login.json` has been uploaded, the page will refresh and the web interface is usable.
+ > You must have logged in via `ankerctl.py config login` in your terminal *before* you can use the web interface. Once logged in, the page will load providing access to your cameras and printer status.
 
 ### Printing Directly from PrusaSlicer
 

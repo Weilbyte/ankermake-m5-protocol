@@ -33,14 +33,12 @@ from datetime import datetime
 from secrets import token_urlsafe as token
 from flask import Flask, flash, request, render_template, Response, session, url_for, jsonify
 from flask_sock import Sock
-from user_agents import parse as user_agent_parse
 
 from libflagship import ROOT_DIR
 
 from web.lib.service import ServiceManager, RunState, ServiceStoppedError
 
 import web.config
-import web.platform
 import web.util
 
 import cli.util
@@ -101,17 +99,20 @@ def pppp_state(sock):
 
     pppp_connected = False
 
-    # A timeout of 3 sec should be fine, as the printer continuously sends
-    # PktAlive messages every second on an established connection.
-    for chan, msg in app.svc.stream("pppp", timeout=3.0):
-        if not pppp_connected:
-            with app.svc.borrow("pppp") as pppp:
-                if pppp.connected:
-                    pppp_connected = True
-                    # this is the only message ever sent on this connection
-                    # to signal that the pppp connection is up
-                    sock.send(json.dumps({"status": "connected"}))
-                    log.info(f"PPPP connection established")
+    try:
+        # A timeout of 3 sec should be fine, as the printer continuously sends
+        # PktAlive messages every second on an established connection.
+        for chan, msg in app.svc.stream("pppp", timeout=3.0):
+            if not pppp_connected:
+                with app.svc.borrow("pppp") as pppp:
+                    if pppp.connected:
+                        pppp_connected = True
+                        # this is the only message ever sent on this connection
+                        # to signal that the pppp connection is up
+                        sock.send(json.dumps({"status": "connected"}))
+                        log.info(f"PPPP connection established")
+    except Exception as e:
+        log.exception(f"CRASH IN PPPP_STATE WEBSOCKET: {e}")
     if not pppp_connected:
         log.warning(f'[{datetime.now().strftime("%d/%b/%Y %H:%M:%S")}] PPPP connection lost, restarting PPPPService')
         try:
@@ -177,8 +178,6 @@ def app_root():
     """
     config = app.config["config"]
     with config.open() as cfg:
-        user_agent = user_agent_parse(request.headers.get("User-Agent"))
-        user_os = web.platform.os_platform(user_agent.os.family)
 
         if cfg:
             anker_config = str(web.config.config_show(cfg))
@@ -205,7 +204,6 @@ def app_root():
             request_host=request_host,
             request_port=request_port,
             configure=app.config["login"],
-            login_file_path=web.platform.login_path(user_os),
             anker_config=anker_config,
             video_supported=app.config["video_supported"],
             config_existing_email=config_existing_email,
@@ -267,31 +265,6 @@ def app_api_ankerctl_config_update_ip_addresses():
 
     return web.util.flash_redirect(url, message, category)
 
-
-@app.post("/api/ankerctl/config/upload")
-def app_api_ankerctl_config_upload():
-    """
-    Handles the uploading of configuration file to Flask server
-
-    Returns:
-        A HTML redirect response
-    """
-    if request.method != "POST":
-        return web.util.flash_redirect(url_for('app_root'))
-    if "login_file" not in request.files:
-        return web.util.flash_redirect(url_for('app_root'), "No file found", "danger")
-    file = request.files["login_file"]
-
-    try:
-        web.config.config_import(file, app.config["config"])
-        return web.util.flash_redirect(url_for('app_api_ankerctl_server_internal_reload'),
-                                       "AnkerMake Config Imported!", "success")
-    except web.config.ConfigImportError as err:
-        log.exception(f"Config import failed: {err}")
-        return web.util.flash_redirect(url_for('app_root'), f"Error: {err}", "danger")
-    except Exception as err:
-        log.exception(f"Config import failed: {err}")
-        return web.util.flash_redirect(url_for('app_root'), f"Unexpected Error occurred: {err}", "danger")
 
 
 @app.post("/api/ankerctl/config/login")
