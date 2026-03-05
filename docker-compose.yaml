@@ -1,6 +1,6 @@
 services:
     ankerctl:
-        image: anselor/ankerctl:exile-latest
+        image: ankerctl:latest
         container_name: ankerctl
         restart: unless-stopped
         build: .
