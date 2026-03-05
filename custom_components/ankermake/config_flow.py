@@ -4,8 +4,6 @@ from typing import Any, Dict, Optional
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, CONF_EMAIL, CONF_PASSWORD, CONF_COUNTRY
 
