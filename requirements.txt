@@ -9,6 +9,5 @@ crcmod==1.7
 tqdm==4.65.0
 flask==3.0.3
 flask-sock==0.7.0
-user-agents==2.2.0
 ifaddr==0.2.0
 python-dotenv==1.0.1
