@@ -31,15 +31,29 @@ class AnkerMakeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: Dict[str, str] = {}
 
         if user_input is not None:
-            # TODO: Add logic here to connect out to AnkerHTTPApiV2 using hassles.async_add_executor_job()
-            # to verify that the email, password, and country code are valid before
-            # creating the config entry.
+            email = user_input[CONF_EMAIL]
+            password = user_input[CONF_PASSWORD]
+            region = user_input[CONF_COUNTRY].lower()
 
-            # If login successful:
-            return self.async_create_entry(
-                title=user_input[CONF_EMAIL],
-                data=user_input,
-            )
+            try:
+                # We must run synchronous HTTP requests in an executor to avoid blocking HA
+                def _verify_login():
+                    from libflagship.httpapi import AnkerHTTPPassportApiV2
+                    ppapi = AnkerHTTPPassportApiV2(region=region, verify=True)
+                    return ppapi.login(email, password)
+                
+                result = await self.hass.async_add_executor_job(_verify_login)
+                
+                if result and "auth_token" in result:
+                    return self.async_create_entry(
+                        title=email,
+                        data=user_input,
+                    )
+                else:
+                    errors["base"] = "invalid_auth"
+            except Exception as e:
+                _LOGGER.error("Failed to authenticate with AnkerMake during setup: %s", e)
+                errors["base"] = "invalid_auth"
 
         return self.async_show_form(
             step_id="user",
