@@ -1,4 +1,4 @@
-# AnkerMake M5 Protocol
+# AnkerMake M5 Protocol 2026 Edition
 
 Welcome! This repository contains `ankerctl`, a command-line interface and web UI for monitoring, controlling and interfacing with AnkerMake M5 and M5C 3D printers.
 
