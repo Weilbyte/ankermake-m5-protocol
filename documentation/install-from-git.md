@@ -5,10 +5,7 @@
 
 ## Windows
 
-1. Install the [AnkerMake slicer](https://www.ankermake.com/software). Make sure you open it and login via the “Account” dropdown in the top toolbar.
-   **NOTE:** The slicer app does not need to be open for the rest of these steps.
-   
-2. Using `git` or [GitHub Desktop](https://desktop.github.com/), clone this repository into a location of your choice and then navigate to that location in File Explorer.
+1. Using `git` or [GitHub Desktop](https://desktop.github.com/), clone this repository into a location of your choice and then navigate to that location in File Explorer.
 
 3. Hold down the "Shift" key and right-click on some empty space in the repository top level folder. Select "Open in Terminal" (Windows 11) or  "Open PowerShell window here" (Windows 10) from the context menu dropdown. (If the following commands do not work, try re-opening your terminal window as administrator and use the `cd` command to navigate to where you cloned this repository)
 
@@ -48,10 +45,7 @@
 
 ## MacOS
 
-1. Install the [AnkerMake slicer](https://www.ankermake.com/software). Make sure you open it and login via the “Account” dropdown in the top toolbar.
-   **NOTE:** The slicer app does not need to be open for the rest of these steps.
-
-2. Using `git` or [GitHub Desktop](https://desktop.github.com/), clone this repository into a location of your choice and then navigate to that location in Finder.
+1. Using `git` or [GitHub Desktop](https://desktop.github.com/), clone this repository into a location of your choice and then navigate to that location in Finder.
 
 3. Hold down the "Control" key and click the folder in the path bar, then choose "Open in Terminal". (If you don’t see the path bar at the bottom of the Finder window, choose View > Show Path Bar)
 
@@ -69,11 +63,7 @@
 
 ## Linux
 
-1. Install the [AnkerMake slicer](https://www.ankermake.com/software). Alternatively, you can install the slicer on a officially supported operating system that you have access to (Windows or MacOS) and use the `login.json` file from that machine. Either way you choose, make sure you open the slicer and login via the “Account” dropdown in the top toolbar.
-
-   **NOTE:** The slicer app does not need to be open for the rest of these steps.
-
-2. Using `git`, clone this repository into a location of your choice and then navigate to that location in your terminal app of choice.
+1. Using `git`, clone this repository into a location of your choice and then navigate to that location in your terminal app of choice.
 
 3. Install Python3 from whatever package manager your distro uses via the terminal. The minimum version has to be 3.10 or newer. 
 
