@@ -1,0 +1,14 @@
+{
+  "domain": "ankermake",
+  "name": "AnkerMake",
+  "documentation": "https://github.com/anselor/ankermake-m5-protocol",
+  "dependencies": [],
+  "codeowners": ["@anselor"],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "version": "1.0.0",
+  "requirements": [
+    "paho-mqtt==1.6.1",
+    "pycryptodomex==3.20"
+  ]
+}
