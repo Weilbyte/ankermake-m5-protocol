@@ -142,10 +142,4 @@ Some examples:
 
 ## Legal
 
-This project is **<u>NOT</u>** endorsed, affiliated with, or supported by AnkerMake. All information found herein is gathered entirely from reverse engineering using publicly available knowledge and resources.
-
-The goal of this project is to make the AnkerMake M5 and M5C usable and accessible using only Free and Open Source Software (FOSS).
-
-This project is [licensed under the GNU GPLv3](LICENSE), and copyright © 2023 Christian Iversen.
-
 Some icons from [IconFinder](https://www.iconfinder.com/iconsets/3d-printing-line), and licensed under [Creative Commons](https://creativecommons.org/licenses/by/3.0/)
