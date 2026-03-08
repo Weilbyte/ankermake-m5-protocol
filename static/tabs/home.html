@@ -88,7 +88,7 @@
                                         title="Target Nozzle Temperature" aria-label="Target Nozzle Temperature"
                                         aria-describedby="nozzleGroup" data-bs-toggle="modal"
                                         data-bs-target="#popupModalInput" data-input-type="number" data-input-min="0"
-                                        data-input-max="300" data-input-icon-class="icon-hotend" data-input-unit="°C"
+                                        data-input-max="260" data-input-icon-class="icon-hotend" data-input-unit="°C"
                                         disabled>
                                         0°C
                                     </button>
@@ -128,6 +128,38 @@
                             <div class="col-4">
                                 <button class="w-100 btn btn-outline-secondary btn-sm" id="preheat-cooldown" disabled>
                                     Cooldown
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-header fs-6">Extruder</div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="extrude-len" id="extrude-1"
+                                    autocomplete="off" value="1">
+                                <label class="w-100 btn btn-outline-secondary btn-sm" for="extrude-1">1mm</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="extrude-len" id="extrude-10"
+                                    autocomplete="off" value="10" checked>
+                                <label class="w-100 btn btn-outline-secondary btn-sm" for="extrude-10">10mm</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="extrude-len" id="extrude-50"
+                                    autocomplete="off" value="50">
+                                <label class="w-100 btn btn-outline-secondary btn-sm" for="extrude-50">50mm</label>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button class="w-100 btn btn-secondary" id="extrude-btn" disabled>
+                                    Extrude
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="w-100 btn btn-secondary" id="retract-btn" disabled>
+                                    Retract
                                 </button>
                             </div>
                         </div>

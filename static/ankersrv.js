@@ -340,7 +340,7 @@ $(function () {
         badge: "#badge-mqtt",
 
         opened: function (event) {
-            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
                 $(elem_id)[0].disabled = false;
             });
         },
@@ -403,7 +403,7 @@ $(function () {
             $("#print-speed").text("0mm/s");
             $("#print-layer").text("0 / 0");
 
-            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
                 $(elem_id).get(0).disabled = true;
             });
         },
@@ -600,7 +600,8 @@ $(function () {
         let gcodeCMD = "";
         switch (input_id) {
             case "set-nozzle-temp":
-                gcodeCMD = "M104 S" + new_value_int.toString();
+                const clampedNozzle = Math.min(new_value_int, 260);
+                gcodeCMD = "M104 S" + clampedNozzle.toString();
                 message_data = {
                     commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
                     cmdData: gcodeCMD,
@@ -608,7 +609,8 @@ $(function () {
                 };
                 break;
             case "set-bed-temp":
-                gcodeCMD = "M140 S" + new_value_int.toString();
+                const clampedBed = Math.min(new_value_int, 100);
+                gcodeCMD = "M140 S" + clampedBed.toString();
                 message_data = {
                     commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
                     cmdData: gcodeCMD,
@@ -639,6 +641,54 @@ $(function () {
             }, 500);
             return false;
         });
+    });
+
+    $("#extrude-btn").on("click", function () {
+        const len = $("input[name='extrude-len']:checked").val();
+
+        const gcode1 = "M83";
+        const message1 = {
+            commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
+            cmdData: gcode1,
+            cmdLen: gcode1.length,
+        };
+        sockets.ctrl.ws.send(JSON.stringify({ mqtt: message1 }));
+
+        setTimeout(() => {
+            const gcode2 = `G1 E${len} F300`;
+            const message2 = {
+                commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
+                cmdData: gcode2,
+                cmdLen: gcode2.length,
+            };
+            sockets.ctrl.ws.send(JSON.stringify({ mqtt: message2 }));
+        }, 500);
+
+        return false;
+    });
+
+    $("#retract-btn").on("click", function () {
+        const len = $("input[name='extrude-len']:checked").val();
+
+        const gcode1 = "M83";
+        const message1 = {
+            commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
+            cmdData: gcode1,
+            cmdLen: gcode1.length,
+        };
+        sockets.ctrl.ws.send(JSON.stringify({ mqtt: message1 }));
+
+        setTimeout(() => {
+            const gcode2 = `G1 E-${len} F300`;
+            const message2 = {
+                commandType: MqttMsgType.ZZ_MQTT_CMD_GCODE_COMMAND,
+                cmdData: gcode2,
+                cmdLen: gcode2.length,
+            };
+            sockets.ctrl.ws.send(JSON.stringify({ mqtt: message2 }));
+        }, 500);
+
+        return false;
     });
 
 });
