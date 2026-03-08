@@ -652,7 +652,9 @@ $(function () {
         const currentTemp = parseInt(currentTempText, 10) || 0;
 
         if (currentTemp < 180) {
-            alert("Nozzle is too cold to extrude safely. Preparing to preheat to 200°C.");
+            const flash = $(`<div class="alert alert-warning alert-dismissible fade show" role="alert"><button type="button" class="btn-close btn-sm btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>Nozzle is too cold to extrude safely. Preparing to preheat to 200°C.</div>`);
+            $("#messages").append(flash);
+            setTimeout(() => flash.alert('close'), 7500);
             sendNewValueViaMQTT("set-nozzle-temp", "200");
             return false;
         }
@@ -685,7 +687,9 @@ $(function () {
         const currentTemp = parseInt(currentTempText, 10) || 0;
 
         if (currentTemp < 180) {
-            alert("Nozzle is too cold to retract safely. Preparing to preheat to 200°C.");
+            const flash = $(`<div class="alert alert-warning alert-dismissible fade show" role="alert"><button type="button" class="btn-close btn-sm btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>Nozzle is too cold to retract safely. Preparing to preheat to 200°C.</div>`);
+            $("#messages").append(flash);
+            setTimeout(() => flash.alert('close'), 7500);
             sendNewValueViaMQTT("set-nozzle-temp", "200");
             return false;
         }
