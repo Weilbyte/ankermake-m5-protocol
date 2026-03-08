@@ -484,6 +484,8 @@ $(function () {
      */
     $("#light-on").on("click", function () {
         sockets.ctrl.ws.send(JSON.stringify({ light: true }));
+        $("#light-on").addClass("btn-primary").removeClass("btn-secondary opacity-75");
+        $("#light-off").addClass("btn-secondary opacity-75").removeClass("btn-primary");
         return false;
     });
 
@@ -492,6 +494,8 @@ $(function () {
      */
     $("#light-off").on("click", function () {
         sockets.ctrl.ws.send(JSON.stringify({ light: false }));
+        $("#light-off").addClass("btn-primary").removeClass("btn-secondary opacity-75");
+        $("#light-on").addClass("btn-secondary opacity-75").removeClass("btn-primary");
         return false;
     });
 
