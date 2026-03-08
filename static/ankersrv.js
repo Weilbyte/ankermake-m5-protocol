@@ -358,7 +358,7 @@ $(function () {
         badge: "#badge-mqtt",
 
         opened: function (event) {
-            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#set-fan-speed", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
                 $(elem_id)[0].disabled = false;
             });
         },
@@ -410,6 +410,39 @@ $(function () {
                     lastLayer = layer;
                 }
                 $("#print-layer").text(layer);
+            } else if (data.commandType == 1005) {
+                // Returns Fan Speed 0-255
+                const current = Math.round((data.value / 255) * 100);
+                $("#fan-speed").text(`${current}%`);
+                if (Object.prototype.hasOwnProperty.call(data, "target_fan_speed")) {
+                    const target = Math.round((data.target_fan_speed / 255) * 100);
+                    if (!isNaN(target)) {
+                        $("#set-fan-speed").text(`${target}`);
+                    }
+                }
+            } else if (data.commandType == 1000) {
+                // Returns Notice / Error State
+                let m = "Offline";
+                switch (data.notice) {
+                    case 0: m = "Idle"; break;
+                    case 1: m = "Printing"; break;
+                    case 2: m = "Finished"; break;
+                    case 3: m = "Error state"; break;
+                    case 4: m = "Wait for extrude"; break;
+                    case 5: m = "Extruding"; break;
+                    default: m = "Unknown: " + data.notice;
+                }
+                const statEl = $("#system-status");
+                statEl.text(m);
+
+                // Color formatting
+                statEl.removeClass("alert-secondary alert-success alert-warning alert-danger alert-info");
+                if (data.notice === 1) statEl.addClass("alert-success");
+                else if (data.notice === 2) statEl.addClass("alert-info");
+                else if (data.notice === 3) statEl.addClass("alert-danger");
+                else if (data.notice === 4 || data.notice === 5) statEl.addClass("alert-warning");
+                else statEl.addClass("alert-secondary");
+
             } else if (data.commandType == 1007 || data.commandType == 1008 || data.commandType == 1009) {
                 // Silently sink high-frequency time elapsed/remaining broadcast loops to avoid Console flooding
             } else {
@@ -431,8 +464,11 @@ $(function () {
             $("#set-bed-temp").text("0°C");
             $("#print-speed").text("0mm/s");
             $("#print-layer").text("0 / 0");
+            $("#fan-speed").text("0%");
+            $("#set-fan-speed").text("0");
+            $("#system-status").text("Offline").removeClass("alert-success alert-warning alert-danger alert-info").addClass("alert-secondary");
 
-            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#set-fan-speed", "#preheat-pla", "#preheat-petg", "#preheat-cooldown", "#extrude-btn", "#retract-btn"].forEach(function (elem_id) {
                 $(elem_id).get(0).disabled = true;
             });
         },
@@ -636,6 +672,15 @@ $(function () {
         const new_value_int = (new_value === "") ? 0 : parseInt(new_value);
         let gcodeCMD = "";
         switch (input_id) {
+            case "set-fan-speed":
+                // 1005 takes a raw 0-255 bit integer directly through the API, unfortunately not G-code M106 right here
+                const clampedFan = Math.min(Math.max(new_value_int, 0), 255);
+                logDebug(`Targeting Fan: ${clampedFan}/255`);
+                message_data = {
+                    commandType: 1005, // ZZ_MQTT_CMD_FAN_SPEED
+                    value: clampedFan.toString()
+                };
+                break;
             case "set-nozzle-temp":
                 const clampedNozzle = Math.min(new_value_int, 260);
                 gcodeCMD = "M104 S" + clampedNozzle.toString();
