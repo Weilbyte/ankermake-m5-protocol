@@ -9,6 +9,25 @@
                     <video class="w-100 d-block rounded-3 bg-body-tertiary" playsinline autoplay muted id="player"
                         poster="{{ url_for('static', filename='img/load-screen.svg') }}">
                     </video>
+                    <div class="position-absolute top-0 end-0 p-2 d-flex gap-2 bg-dark bg-opacity-50 rounded-bl-3"
+                        style="border-bottom-left-radius: 0.5rem; z-index: 10;">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-secondary btn-sm opacity-75" id="light-on" title="Light On">
+                                {{ macro.bi_icon("lightbulb", "Light on") }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm opacity-75" id="light-off" title="Light Off">
+                                {{ macro.bi_icon("lightbulb-off", "Light off") }}
+                            </button>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-secondary btn-sm opacity-75" id="quality-low" title="SD Quality">
+                                {{ macro.bi_icon("badge-sd", "SD Quality") }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm opacity-75" id="quality-high" title="HD Quality">
+                                {{ macro.bi_icon("badge-hd", "HD Quality") }}
+                            </button>
+                        </div>
+                    </div>
                     <button class="btn btn-secondary opacity-50" id="video-fs">
                         {{ macro.bi_icon("fullscreen") }}
                     </button>
@@ -42,35 +61,7 @@
                         <span id="badge-ctrl" class="badge">CTRL</span>
                     </div>
                     {% endif %}
-                    {% if video_supported %}
-                    <div class="card-header fs-6">Video Controls</div>
-                    <div class="card-body">
-                        <div class="row g-3 mb-3">
-                            <div class="col-6">
-                                <button class="w-100 btn btn-secondary" id="light-on">
-                                    {{ macro.bi_icon("lightbulb", "Light on") }}
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button class="w-100 btn btn-secondary" id="light-off">
-                                    {{ macro.bi_icon("lightbulb-off", "Light off") }}
-                                </button>
-                            </div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <button class="w-100 btn btn-secondary" id="quality-low">
-                                    {{ macro.bi_icon("badge-sd", "SD Quality") }}
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button class="w-100 btn btn-secondary" id="quality-high">
-                                    {{ macro.bi_icon("badge-hd", "HD Quality") }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
+
                     <div class="card-header fs-6">Temperature</div>
                     <div class="card-body">
                         <div class="row g-3">
