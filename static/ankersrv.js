@@ -184,7 +184,7 @@ $(function () {
     /**
      * Updates the country code <select> element
      */
-    (function(selectElement) {
+    (function (selectElement) {
         var countryCodes = selectElement.data("countrycodes");
         var currentCountry = selectElement.data("country");
         countryCodes.forEach((item) => {
@@ -199,7 +199,7 @@ $(function () {
     $("#captchaRow").hide();
     $("#loginCaptchaId").val("");
 
-    $("#config-login-form").on("submit", function(e) {
+    $("#config-login-form").on("submit", function (e) {
         e.preventDefault();
 
         (async () => {
@@ -245,10 +245,10 @@ $(function () {
     function flash_message(message, category) {
         // copy from base.html
         $(`<div class="alert alert-${category} alert-dismissible fade show" data-timeout="7500" role="alert">` +
-          '<button type="button" class="btn-close btn-sm btn-close-white" data-bs-dismiss="alert" aria-label="Close">' +
-          '</button>' +
-          message +
-          '</div>').appendTo($("#messages").empty());
+            '<button type="button" class="btn-close btn-sm btn-close-white" data-bs-dismiss="alert" aria-label="Close">' +
+            '</button>' +
+            message +
+            '</div>').appendTo($("#messages").empty());
         // does not auto-close yet...
     }
 
@@ -336,11 +336,11 @@ $(function () {
 
     sockets.mqtt = new AutoWebSocket({
         name: "mqtt socket",
-        url: `${location.protocol.replace('http','ws')}//${location.host}/ws/mqtt`,
+        url: `${location.protocol.replace('http', 'ws')}//${location.host}/ws/mqtt`,
         badge: "#badge-mqtt",
 
         opened: function (event) {
-            ["#set-nozzle-temp", "#set-bed-temp"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown"].forEach(function (elem_id) {
                 $(elem_id)[0].disabled = false;
             });
         },
@@ -403,7 +403,7 @@ $(function () {
             $("#print-speed").text("0mm/s");
             $("#print-layer").text("0 / 0");
 
-            ["#set-nozzle-temp", "#set-bed-temp"].forEach(function (elem_id) {
+            ["#set-nozzle-temp", "#set-bed-temp", "#preheat-pla", "#preheat-petg", "#preheat-cooldown"].forEach(function (elem_id) {
                 $(elem_id).get(0).disabled = true;
             });
         },
@@ -414,7 +414,7 @@ $(function () {
      */
     sockets.video = new AutoWebSocket({
         name: "Video socket",
-        url: `${location.protocol.replace('http','ws')}${location.host}/ws/video`,
+        url: `${location.protocol.replace('http', 'ws')}${location.host}/ws/video`,
         badge: "#badge-video",
         binary: true,
 
@@ -453,13 +453,13 @@ $(function () {
 
     sockets.ctrl = new AutoWebSocket({
         name: "Control socket",
-        url: `${location.protocol.replace('http','ws')}${location.host}/ws/ctrl`,
+        url: `${location.protocol.replace('http', 'ws')}${location.host}/ws/ctrl`,
         badge: "#badge-ctrl",
     });
 
     sockets.pppp_state = new AutoWebSocket({
         name: "PPPP socket",
-        url: `${location.protocol.replace('http','ws')}//${location.host}/ws/pppp-state`,
+        url: `${location.protocol.replace('http', 'ws')}//${location.host}/ws/pppp-state`,
         badge: "#badge-pppp",
     });
 
@@ -620,5 +620,22 @@ $(function () {
             sockets.ctrl.ws.send(JSON.stringify({ mqtt: message_data }));
         }
     }
+
+    ["pla", "petg", "cooldown"].forEach(function (preset) {
+        $(`#preheat-${preset}`).on("click", function () {
+            let nozzle = 0;
+            let bed = 0;
+            if (preset === "pla") {
+                nozzle = 200;
+                bed = 60;
+            } else if (preset === "petg") {
+                nozzle = 240;
+                bed = 70;
+            }
+            sendNewValueViaMQTT("set-bed-temp", bed.toString());
+            sendNewValueViaMQTT("set-nozzle-temp", nozzle.toString());
+            return false;
+        });
+    });
 
 });
