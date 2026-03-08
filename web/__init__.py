@@ -137,7 +137,8 @@ def ctrl(sock):
 
         if "mqtt" in msg:
             with app.svc.borrow("mqttqueue") as mq:
-                mq.client.command(msg["mqtt"])
+                safe_payload = mq.validate_gcode_payload(msg["mqtt"])
+                mq.client.command(safe_payload)
 
         if "light" in msg:
             with app.svc.borrow("videoqueue") as vq:
