@@ -632,8 +632,11 @@ $(function () {
                 nozzle = 240;
                 bed = 70;
             }
+
             sendNewValueViaMQTT("set-bed-temp", bed.toString());
-            sendNewValueViaMQTT("set-nozzle-temp", nozzle.toString());
+            setTimeout(() => {
+                sendNewValueViaMQTT("set-nozzle-temp", nozzle.toString());
+            }, 500);
             return false;
         });
     });

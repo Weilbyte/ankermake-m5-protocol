@@ -5,10 +5,10 @@ import json
 async def test():
     uri = "ws://127.0.0.1:4470/ws/ctrl"
     async with websockets.connect(uri) as websocket:
-        gcode_multi = "M140 S60\nM104 S210\n"
+        gcode_multi = "M140 S0\nM104 S0\n"
         payload = {
             "mqtt": {
-                "commandType": 1017,
+                "commandType": 1043,
                 "cmdData": gcode_multi,
                 "cmdLen": len(gcode_multi)
             }
