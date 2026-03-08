@@ -597,19 +597,22 @@ $(function () {
     function sendNewValueViaMQTT(input_id, new_value) {
         let message_data = {};
         const new_value_int = (new_value === "") ? 0 : parseInt(new_value);
+        let gcodeCMD = "";
         switch (input_id) {
             case "set-nozzle-temp":
+                gcodeCMD = "M104 S" + new_value_int.toString();
                 message_data = {
-                    commandType: MqttMsgType.ZZ_MQTT_CMD_PREHEAT_CONFIG,
-                    nozzle: new_value_int * 100,
-                    value: 1,     // not sure why and if this is needed
+                    commandType: 1017, // ZZ_MQTT_CMD_GCODE_COMMAND
+                    cmdData: gcodeCMD,
+                    cmdLen: gcodeCMD.length,
                 };
                 break;
             case "set-bed-temp":
+                gcodeCMD = "M140 S" + new_value_int.toString();
                 message_data = {
-                    commandType: MqttMsgType.ZZ_MQTT_CMD_PREHEAT_CONFIG,
-                    heatbed: new_value_int * 100,
-                    value: 1,     // not sure why and if this is needed
+                    commandType: 1017, // ZZ_MQTT_CMD_GCODE_COMMAND
+                    cmdData: gcodeCMD,
+                    cmdLen: gcodeCMD.length,
                 };
                 break;
         }

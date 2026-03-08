@@ -241,15 +241,17 @@ class AnkerPPPPBaseApi(Thread):
         self.dumper = None
 
     @classmethod
-    def open(cls, duid, host, port, bind_port=PPPP_LAN_PORT):
+    def open(cls, duid, host, port, bind_port=0):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # Bind to the strict PPPP port so Docker mappings work
+        # Bind to the explicit bind_port or default to 0 for ephemeral 
+        # local streams over Windows
         sock.bind(("0.0.0.0", bind_port))
         return cls(sock, duid, addr=(host, port))
 
     @classmethod
     def open_lan(cls, duid, host):
-        return cls.open(duid, host, PPPP_LAN_PORT, bind_port=PPPP_LAN_PORT)
+        # Allow Docker cross-platform NAT traversal, but default to 0 for local instances
+        return cls.open(duid, host, PPPP_LAN_PORT, bind_port=0)
 
     @classmethod
     def open_wan(cls, duid, host):
@@ -260,8 +262,8 @@ class AnkerPPPPBaseApi(Thread):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         if bind_addr is not None:
-            # Bind statically to PPPP_LAN_PORT to support Docker NAT passthrough
-            sock.bind((bind_addr, PPPP_LAN_PORT))
+            # Bind statically to ephemeral port 0 to prevent multi-worker collision natively
+            sock.bind((bind_addr, 0))
         addr = ("255.255.255.255", PPPP_LAN_PORT)
         return cls(sock, duid=None, addr=addr)
 
